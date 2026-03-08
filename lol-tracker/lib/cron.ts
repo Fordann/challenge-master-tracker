@@ -22,6 +22,9 @@ export async function initCron() {
 
   console.log(`[Cron] Starting sync every ${intervalMinutes} minutes`)
 
+  // Auto-fix matches with lpChange=0 (from initial import)
+  await fixZeroLpMatches().catch((e) => console.error('[Cron] Fix LP error:', e))
+
   // Run immediately on startup
   await syncRiotData().catch((e) => console.error('[Cron] Initial sync error:', e))
 
@@ -54,6 +57,30 @@ export async function getOrCreatePlayer() {
   })
 
   return player
+}
+
+async function fixZeroLpMatches() {
+  const zeroLpMatches = await prisma.match.findMany({
+    where: { lpChange: 0 },
+    orderBy: { playedAt: 'asc' },
+  })
+
+  if (zeroLpMatches.length === 0) return
+
+  console.log(`[Cron] Fixing ${zeroLpMatches.length} matches with lpChange=0`)
+
+  for (const match of zeroLpMatches) {
+    const estimatedChange = match.win ? 25 : -20
+    await prisma.match.update({
+      where: { id: match.id },
+      data: {
+        lpChange: estimatedChange,
+        lpBefore: match.lpAfter - estimatedChange,
+      },
+    })
+  }
+
+  console.log(`[Cron] Fixed ${zeroLpMatches.length} matches with estimated LP`)
 }
 
 async function syncRiotData() {
@@ -133,73 +160,70 @@ async function syncRiotData() {
   // Sort oldest first so LP tracking accumulates correctly
   newMatchesData.sort((a, b) => a.matchData.info.gameStartTimestamp - b.matchData.info.gameStartTimestamp)
 
-  for (const { matchId, matchData } of newMatchesData) {
-    const participant = matchData.info.participants.find(
-      (p) => p.puuid === player.puuid
-    )!
+  if (newMatchesData.length > 0) {
+    // Compute LP for each match:
+    // - If 1 match: exact LP from snapshot difference
+    // - If multiple: estimate per match, adjust last match to match actual total
+    const currentLp = soloQ.leaguePoints
+    const prevLp = lastSnapshot?.lp ?? currentLp
+    const totalLpChange = currentLp - prevLp
 
-    // Get the snapshot just before this match for LP tracking
-    const snapshotBefore = await prisma.rankSnapshot.findFirst({
-      where: {
-        playerId: player.id,
-        takenAt: { lt: new Date(matchData.info.gameEndTimestamp) },
-      },
-      orderBy: { takenAt: 'desc' },
+    // Build estimated LP per match
+    const estimated: number[] = newMatchesData.map(({ matchData }) => {
+      const p = matchData.info.participants.find((p) => p.puuid === player.puuid)!
+      return p.win ? 25 : -20
     })
 
-    // If we have two snapshots around this match, compute exact LP change
-    // Otherwise, estimate based on typical LP gain/loss for the tier
-    let lpBefore: number
-    let lpAfter: number
-    let lpChange: number
-
-    const snapshotAfter = await prisma.rankSnapshot.findFirst({
-      where: {
-        playerId: player.id,
-        takenAt: { gte: new Date(matchData.info.gameEndTimestamp) },
-      },
-      orderBy: { takenAt: 'asc' },
-    })
-
-    if (snapshotBefore && snapshotAfter && snapshotBefore.id !== snapshotAfter.id) {
-      // Exact LP change from snapshots
-      lpBefore = snapshotBefore.lp
-      lpAfter = snapshotAfter.lp
-      lpChange = lpAfter - lpBefore
-    } else {
-      // Estimate LP change: typical values per tier
-      const estimatedGain = 25
-      const estimatedLoss = -20
-      lpChange = participant.win ? estimatedGain : estimatedLoss
-      lpBefore = soloQ.leaguePoints - lpChange
-      lpAfter = soloQ.leaguePoints
+    if (newMatchesData.length === 1) {
+      // Exact LP from snapshots
+      estimated[0] = totalLpChange !== 0 ? totalLpChange : estimated[0]
+    } else if (totalLpChange !== 0) {
+      // Adjust last match so the sum matches actual LP difference
+      const estimatedTotal = estimated.reduce((sum, v) => sum + v, 0)
+      const diff = totalLpChange - estimatedTotal
+      estimated[estimated.length - 1] += diff
     }
 
-    const match = await prisma.match.create({
-      data: {
-        matchId,
-        playedAt: new Date(matchData.info.gameStartTimestamp),
-        champion: participant.championName,
-        championId: participant.championId,
-        skinId: 0,
-        win: participant.win,
-        lpBefore,
-        lpAfter,
-        lpChange,
-        tier: soloQ.tier,
-        rank: soloQ.rank,
-        duration: matchData.info.gameDuration,
-        playerId: player.id,
-      },
-    })
+    // Track running LP
+    let runningLp = newMatchesData.length === 1 ? prevLp : currentLp - estimated.reduce((s, v) => s + v, 0)
 
-    // Assign to session
-    await assignMatchToSession(player.id, match.playedAt, match.id)
+    for (let i = 0; i < newMatchesData.length; i++) {
+      const { matchId, matchData } = newMatchesData[i]
+      const participant = matchData.info.participants.find(
+        (p) => p.puuid === player.puuid
+      )!
 
-    // Pre-cache champion assets
-    await getChampionCutout(participant.championName, 0).catch((e) =>
-      console.error(`[Sync] Failed to cache champion asset: ${e}`)
-    )
+      const lpChange = estimated[i]
+      const lpBefore = runningLp
+      const lpAfter = runningLp + lpChange
+      runningLp = lpAfter
+
+      const match = await prisma.match.create({
+        data: {
+          matchId,
+          playedAt: new Date(matchData.info.gameStartTimestamp),
+          champion: participant.championName,
+          championId: participant.championId,
+          skinId: 0,
+          win: participant.win,
+          lpBefore,
+          lpAfter,
+          lpChange,
+          tier: soloQ.tier,
+          rank: soloQ.rank,
+          duration: matchData.info.gameDuration,
+          playerId: player.id,
+        },
+      })
+
+      // Assign to session
+      await assignMatchToSession(player.id, match.playedAt, match.id)
+
+      // Pre-cache champion assets
+      await getChampionCutout(participant.championName, 0).catch((e) =>
+        console.error(`[Sync] Failed to cache champion asset: ${e}`)
+      )
+    }
   }
 
   // Close stale sessions & notify
