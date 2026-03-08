@@ -2,8 +2,7 @@ import cron from 'node-cron'
 import { prisma } from './db'
 import {
   getAccountByRiotId,
-  getSummonerByPuuid,
-  getLeagueEntries,
+  getLeagueEntriesByPuuid,
   getMatchIds,
   getMatch,
   getSoloQueueEntry,
@@ -43,21 +42,12 @@ export async function getOrCreatePlayer() {
   let player = await prisma.player.findFirst()
   if (player) return player
 
-  // First run — resolve player
+  // First run — resolve player via Riot ID
   const account = await getAccountByRiotId('AbatJourBleu', 'EUW11')
-  const summoner = await getSummonerByPuuid(account.puuid)
-
-  console.log('[Sync] Summoner API response:', JSON.stringify(summoner))
-
-  const summonerId = summoner.id
-  if (!summonerId) {
-    throw new Error(`Summoner API returned no id. Response: ${JSON.stringify(summoner)}`)
-  }
 
   player = await prisma.player.create({
     data: {
       puuid: account.puuid,
-      summonerId,
       gameName: account.gameName,
       tagLine: account.tagLine,
     },
@@ -70,7 +60,7 @@ async function syncRiotData() {
   const player = await getOrCreatePlayer()
 
   // Get current rank
-  const entries = await getLeagueEntries(player.summonerId)
+  const entries = await getLeagueEntriesByPuuid(player.puuid)
   const soloQ = getSoloQueueEntry(entries)
 
   if (!soloQ) {

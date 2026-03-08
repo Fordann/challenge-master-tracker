@@ -30,8 +30,6 @@ export interface RiotAccount {
 }
 
 export interface Summoner {
-  id: string
-  accountId: string
   puuid: string
   profileIconId: number
   revisionDate: number
@@ -87,9 +85,9 @@ export async function getSummonerByPuuid(puuid: string): Promise<Summoner> {
   )
 }
 
-export async function getLeagueEntries(summonerId: string): Promise<LeagueEntry[]> {
+export async function getLeagueEntriesByPuuid(puuid: string): Promise<LeagueEntry[]> {
   return queuedFetch<LeagueEntry[]>(
-    `https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/${summonerId}`
+    `https://euw1.api.riotgames.com/lol/league/v4/entries/by-puuid/${puuid}`
   )
 }
 
