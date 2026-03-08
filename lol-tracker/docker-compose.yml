@@ -1,14 +1,12 @@
-version: '3.8'
-
 services:
   app:
     build: .
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_URL=mysql://loltracker:password@mariadb:3306/loltracker
       - RIOT_API_KEY=${RIOT_API_KEY}
-      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL}
+      - N8N_WEBHOOK_URL=http://n8n:5678/
       - N8N_WEBHOOK_SECRET=${N8N_WEBHOOK_SECRET}
       - REMOVEBG_API_KEY=${REMOVEBG_API_KEY}
       - CHALLENGE_START=${CHALLENGE_START}
@@ -24,11 +22,13 @@ services:
 
   mariadb:
     image: mariadb:11
+    ports:
+      - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: loltracker
-      MYSQL_USER: loltracker
-      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-loltracker}
+      MYSQL_USER: ${MYSQL_USER:-loltracker}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
     volumes:
       - mariadb_data:/var/lib/mysql
     healthcheck:
@@ -44,8 +44,8 @@ services:
       - "5678:5678"
     environment:
       - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=admin
-      - N8N_BASIC_AUTH_PASSWORD=changeme
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD:-changeme}
       - WEBHOOK_URL=${WEBHOOK_URL:-http://localhost:5678}
     volumes:
       - n8n_data:/home/node/.n8n
