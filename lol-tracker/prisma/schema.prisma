@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  // connection URL moved to prisma.config.ts for Prisma 7+ compatibility
 }
 
 model Player {
