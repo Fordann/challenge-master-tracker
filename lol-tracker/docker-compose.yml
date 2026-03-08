@@ -19,6 +19,8 @@ services:
     restart: unless-stopped
     volumes:
       - champion_cache:/app/public/champion-cache
+    networks:
+      - lol-network
 
   mariadb:
     image: mariadb:11
@@ -37,6 +39,8 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    networks:
+      - lol-network
 
   n8n:
     image: n8nio/n8n:latest
@@ -49,7 +53,16 @@ services:
       - WEBHOOK_URL=${WEBHOOK_URL:-http://localhost:5678}
     volumes:
       - n8n_data:/home/node/.n8n
+    depends_on:
+      mariadb:
+        condition: service_healthy
     restart: unless-stopped
+    networks:
+      - lol-network
+
+networks:
+  lol-network:
+    driver: bridge
 
 volumes:
   mariadb_data:
