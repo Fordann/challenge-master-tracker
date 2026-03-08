@@ -1,0 +1,152 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #0A0A0F;
+  --bg-secondary: #0F1923;
+  --bg-card: #1A1F2E;
+  --accent-gold: #C89B3C;
+  --accent-gold-light: #F0E6C8;
+  --accent-blue: #0BC4E3;
+  --accent-red: #D44B4B;
+  --accent-green: #3CB95E;
+  --text-primary: #F0E6C8;
+  --text-secondary: #A0A0B0;
+  --flame-cold: #606060;
+  --flame-low: #FF8C00;
+  --flame-mid: #FF4500;
+  --flame-hot: #FFD700;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', 'Spiegel', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent-gold);
+  border-radius: 3px;
+}
+
+/* Glassmorphism card */
+.glass-card {
+  background: rgba(15, 25, 35, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(11, 196, 227, 0.3);
+  border-radius: 12px;
+}
+
+/* Glow effects */
+.glow-hextech {
+  box-shadow: 0 0 12px rgba(11, 196, 227, 0.4);
+}
+.glow-win {
+  box-shadow: 0 0 8px rgba(60, 185, 94, 0.5);
+}
+.glow-lose {
+  box-shadow: 0 0 8px rgba(212, 75, 75, 0.5);
+}
+.glow-gold {
+  box-shadow: 0 0 12px rgba(200, 155, 60, 0.4);
+}
+
+/* Beaufort font fallback */
+@font-face {
+  font-family: 'Beaufort for LOL';
+  src: local('Beaufort for LOL');
+  font-display: swap;
+}
+
+.font-beaufort {
+  font-family: 'Beaufort for LOL', 'Cinzel', serif;
+  letter-spacing: 0.05em;
+}
+
+/* Flame animation */
+@keyframes flicker {
+  0%, 100% { transform: scaleY(1) scaleX(1); opacity: 1; }
+  25% { transform: scaleY(1.05) scaleX(0.95); opacity: 0.95; }
+  50% { transform: scaleY(0.95) scaleX(1.05); opacity: 1; }
+  75% { transform: scaleY(1.03) scaleX(0.97); opacity: 0.97; }
+}
+
+@keyframes flicker-intense {
+  0%, 100% { transform: scaleY(1) scaleX(1); opacity: 1; }
+  10% { transform: scaleY(1.1) scaleX(0.9); }
+  20% { transform: scaleY(0.9) scaleX(1.1); }
+  30% { transform: scaleY(1.08) scaleX(0.92); }
+  40% { transform: scaleY(0.95) scaleX(1.05); }
+  50% { transform: scaleY(1.12) scaleX(0.88); opacity: 0.95; }
+  60% { transform: scaleY(0.92) scaleX(1.08); }
+  70% { transform: scaleY(1.06) scaleX(0.94); }
+  80% { transform: scaleY(0.97) scaleX(1.03); opacity: 1; }
+  90% { transform: scaleY(1.04) scaleX(0.96); }
+}
+
+.flame-gentle { animation: flicker 2s ease-in-out infinite; }
+.flame-vivid { animation: flicker 1s ease-in-out infinite; }
+.flame-intense { animation: flicker-intense 0.5s ease-in-out infinite; }
+
+/* Refresh spin */
+@keyframes spin-once {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.spin-refresh {
+  animation: spin-once 600ms ease-in-out;
+}
+
+/* Timer pulse */
+@keyframes pulse-orange {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; color: #FF8C00; }
+}
+.timer-urgent { animation: pulse-orange 1.5s ease-in-out infinite; }
+
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; color: #D44B4B; }
+}
+.timer-critical { animation: pulse-red 1s ease-in-out infinite; }
+
+/* Twinkle stars */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* Lightning flash */
+@keyframes lightning {
+  0%, 100% { opacity: 0; }
+  5% { opacity: 0.8; }
+  10% { opacity: 0; }
+  15% { opacity: 0.6; }
+  20% { opacity: 0; }
+}
+
+/* Count up animation helper */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

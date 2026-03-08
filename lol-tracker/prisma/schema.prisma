@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id          Int            @id @default(autoincrement())
+  puuid       String         @unique
+  summonerId  String         @unique
+  gameName    String
+  tagLine     String
+  createdAt   DateTime       @default(now())
+  matches     Match[]
+  rankHistory RankSnapshot[]
+  sessions    Session[]
+}
+
+model Match {
+  id         Int      @id @default(autoincrement())
+  matchId    String   @unique
+  playedAt   DateTime
+  champion   String
+  championId Int
+  skinId     Int
+  win        Boolean
+  lpBefore   Int
+  lpAfter    Int
+  lpChange   Int
+  tier       String
+  rank       String
+  duration   Int
+  sessionId  Int?
+  session    Session? @relation(fields: [sessionId], references: [id])
+  playerId   Int
+  player     Player   @relation(fields: [playerId], references: [id])
+
+  @@index([playerId])
+  @@index([playedAt])
+}
+
+model Session {
+  id        Int       @id @default(autoincrement())
+  startedAt DateTime
+  endedAt   DateTime?
+  isActive  Boolean   @default(true)
+  matches   Match[]
+  playerId  Int
+  player    Player    @relation(fields: [playerId], references: [id])
+
+  @@index([playerId])
+}
+
+model RankSnapshot {
+  id       Int      @id @default(autoincrement())
+  tier     String
+  rank     String
+  lp       Int
+  takenAt  DateTime @default(now())
+  playerId Int
+  player   Player   @relation(fields: [playerId], references: [id])
+
+  @@index([playerId])
+  @@index([takenAt])
+}
+
+model ChampionAsset {
+  id           Int      @id @default(autoincrement())
+  championName String
+  skinId       Int
+  cutoutPath   String
+  createdAt    DateTime @default(now())
+
+  @@unique([championName, skinId])
+}
+
+model NotificationRecipient {
+  id          Int     @id @default(autoincrement())
+  name        String
+  phoneNumber String
+  apiKey      String
+  active      Boolean @default(true)
+}

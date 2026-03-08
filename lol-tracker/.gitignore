@@ -1,0 +1,8 @@
+node_modules/
+.next/
+.env.local
+.env
+public/champion-cache/*.png
+public/champion-cache/*.jpg
+*.tsbuildinfo
+next-env.d.ts
