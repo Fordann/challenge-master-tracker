@@ -47,6 +47,11 @@ export async function POST() {
       )
       if (!participant) continue
 
+      // LP estimation when snapshot comparison isn't possible
+      const estimatedGain = 25
+      const estimatedLoss = -20
+      const lpChange = participant.win ? estimatedGain : estimatedLoss
+
       const match = await prisma.match.create({
         data: {
           matchId,
@@ -55,9 +60,9 @@ export async function POST() {
           championId: participant.championId,
           skinId: 0,
           win: participant.win,
-          lpBefore: soloQ.leaguePoints,
+          lpBefore: soloQ.leaguePoints - lpChange,
           lpAfter: soloQ.leaguePoints,
-          lpChange: 0,
+          lpChange,
           tier: soloQ.tier,
           rank: soloQ.rank,
           duration: matchData.info.gameDuration,

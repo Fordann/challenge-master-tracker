@@ -10,9 +10,10 @@ interface WallMatch {
 
 interface ChampionWallProps {
   matches: WallMatch[]
+  ddragonVersion: string
 }
 
-export default function ChampionWall({ matches }: ChampionWallProps) {
+export default function ChampionWall({ matches, ddragonVersion }: ChampionWallProps) {
   return (
     <section className="min-h-screen flex flex-col items-center justify-center px-6 py-20"
       style={{ background: '#050508' }}
@@ -41,7 +42,7 @@ export default function ChampionWall({ matches }: ChampionWallProps) {
               }}
             >
               <Image
-                src={`https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/${match.champion}.png`}
+                src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${match.champion}.png`}
                 alt={match.champion}
                 width={48}
                 height={48}

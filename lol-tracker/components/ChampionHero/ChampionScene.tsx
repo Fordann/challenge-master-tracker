@@ -19,6 +19,7 @@ interface ChampionSceneProps {
   lp: number
   playedAgo: string
   sessionWinRate: number
+  ddragonVersion: string
 }
 
 export default function ChampionScene({
@@ -32,6 +33,7 @@ export default function ChampionScene({
   lp,
   playedAgo,
   sessionWinRate,
+  ddragonVersion,
 }: ChampionSceneProps) {
   const mouse = useParallax()
   const atmosphere: AtmosphereConfig = getAtmosphere(tier, rank, sessionWinRate)
@@ -113,7 +115,7 @@ export default function ChampionScene({
           <div className="flex items-center gap-3 mb-2">
             <div className={`w-10 h-10 rounded-full overflow-hidden border-2 ${win ? 'border-accent-green' : 'border-accent-red'} ${resultGlow}`}>
               <Image
-                src={`https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/${championName}.png`}
+                src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${championName}.png`}
                 alt={championName}
                 width={40}
                 height={40}

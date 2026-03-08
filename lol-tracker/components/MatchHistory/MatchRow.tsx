@@ -10,6 +10,7 @@ interface MatchRowProps {
   duration: number
   playedAt: string
   index: number
+  ddragonVersion: string
 }
 
 function formatDuration(seconds: number): string {
@@ -28,23 +29,21 @@ function timeAgo(dateStr: string): string {
   return `il y a ${days}j`
 }
 
-export default function MatchRow({ champion, win, lpChange, duration, playedAt, index }: MatchRowProps) {
+export default function MatchRow({ champion, win, lpChange, duration, playedAt, index, ddragonVersion }: MatchRowProps) {
   const sign = lpChange >= 0 ? '+' : ''
 
   return (
     <motion.div
-      className={`flex items-center gap-4 px-4 py-3 rounded-lg ${
-        index % 2 === 0 ? 'bg-white/[0.02]' : ''
-      }`}
+      className="match-row flex items-center gap-4 px-4 py-3"
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.05, duration: 0.3 }}
     >
       {/* Champion icon */}
-      <div className={`w-10 h-10 rounded-lg overflow-hidden border ${win ? 'border-accent-green/50' : 'border-accent-red/50'}`}>
+      <div className={`w-10 h-10 rounded-full overflow-hidden border-2 ${win ? 'border-accent-green/60' : 'border-accent-red/60'}`}>
         <Image
-          src={`https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/${champion}.png`}
+          src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${champion}.png`}
           alt={champion}
           width={40}
           height={40}
