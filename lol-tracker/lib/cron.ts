@@ -115,7 +115,9 @@ async function syncRiotData() {
   // Fetch recent match IDs
   const matchIds = await getMatchIds(player.puuid, 20)
 
-  // Process new matches
+  // Collect new matches and sort oldest-first for proper LP tracking
+  const newMatchesData: { matchId: string; matchData: Awaited<ReturnType<typeof getMatch>> }[] = []
+
   for (const matchId of matchIds) {
     const exists = await prisma.match.findUnique({ where: { matchId } })
     if (exists) continue
@@ -125,6 +127,16 @@ async function syncRiotData() {
       (p) => p.puuid === player.puuid
     )
     if (!participant) continue
+    newMatchesData.push({ matchId, matchData })
+  }
+
+  // Sort oldest first so LP tracking accumulates correctly
+  newMatchesData.sort((a, b) => a.matchData.info.gameStartTimestamp - b.matchData.info.gameStartTimestamp)
+
+  for (const { matchId, matchData } of newMatchesData) {
+    const participant = matchData.info.participants.find(
+      (p) => p.puuid === player.puuid
+    )!
 
     // Get the snapshot just before this match for LP tracking
     const snapshotBefore = await prisma.rankSnapshot.findFirst({
@@ -135,14 +147,33 @@ async function syncRiotData() {
       orderBy: { takenAt: 'desc' },
     })
 
-    const lpBefore = snapshotBefore?.lp ?? soloQ.leaguePoints
-    const lpAfter = soloQ.leaguePoints
-    const lpChange = lpAfter - lpBefore
+    // If we have two snapshots around this match, compute exact LP change
+    // Otherwise, estimate based on typical LP gain/loss for the tier
+    let lpBefore: number
+    let lpAfter: number
+    let lpChange: number
 
-    // Get skin ID from participant data
-    const skinId = (participant as Record<string, unknown>).skins !== undefined
-      ? 0
-      : ((participant as Record<string, unknown>).championId as number) ? 0 : 0
+    const snapshotAfter = await prisma.rankSnapshot.findFirst({
+      where: {
+        playerId: player.id,
+        takenAt: { gte: new Date(matchData.info.gameEndTimestamp) },
+      },
+      orderBy: { takenAt: 'asc' },
+    })
+
+    if (snapshotBefore && snapshotAfter && snapshotBefore.id !== snapshotAfter.id) {
+      // Exact LP change from snapshots
+      lpBefore = snapshotBefore.lp
+      lpAfter = snapshotAfter.lp
+      lpChange = lpAfter - lpBefore
+    } else {
+      // Estimate LP change: typical values per tier
+      const estimatedGain = 25
+      const estimatedLoss = -20
+      lpChange = participant.win ? estimatedGain : estimatedLoss
+      lpBefore = soloQ.leaguePoints - lpChange
+      lpAfter = soloQ.leaguePoints
+    }
 
     const match = await prisma.match.create({
       data: {
@@ -150,7 +181,7 @@ async function syncRiotData() {
         playedAt: new Date(matchData.info.gameStartTimestamp),
         champion: participant.championName,
         championId: participant.championId,
-        skinId: skinId,
+        skinId: 0,
         win: participant.win,
         lpBefore,
         lpAfter,
@@ -166,7 +197,7 @@ async function syncRiotData() {
     await assignMatchToSession(player.id, match.playedAt, match.id)
 
     // Pre-cache champion assets
-    await getChampionCutout(participant.championName, skinId).catch((e) =>
+    await getChampionCutout(participant.championName, 0).catch((e) =>
       console.error(`[Sync] Failed to cache champion asset: ${e}`)
     )
   }

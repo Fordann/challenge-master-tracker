@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db'
 import { getLPToMaster, getAvgLpChange, getEstimatedGames } from '@/lib/lpCalculator'
+import { getLatestVersion } from '@/lib/riot'
 import ClientPage from './ClientPage'
 
 export const dynamic = 'force-dynamic'
@@ -70,8 +71,23 @@ async function getData() {
       }
     }
 
-    // Last match for hero
+    // Last match for hero — fetch actual asset paths from DB
     const lastMatch = allMatches[0] || null
+    let lastMatchCutoutPath: string | null = null
+    let lastMatchSplashPath: string | null = null
+    if (lastMatch) {
+      const asset = await prisma.championAsset.findUnique({
+        where: { championName_skinId: { championName: lastMatch.champion, skinId: lastMatch.skinId } },
+      })
+      if (asset) {
+        lastMatchCutoutPath = asset.cutoutPath
+        lastMatchSplashPath = `/champion-cache/${lastMatch.champion}_${lastMatch.skinId}_splash.jpg`
+      }
+    }
+
+    // Get DDragon version for champion icons
+    const ddragonVersion = await getLatestVersion()
+
     const sessionWinRate = sessionData
       ? sessionData.winRate / 100
       : allMatches.length > 0
@@ -115,6 +131,7 @@ async function getData() {
       streakType,
       sessionData,
       sessionWinRate,
+      ddragonVersion,
       lastMatch: lastMatch
         ? {
             champion: lastMatch.champion,
@@ -122,6 +139,8 @@ async function getData() {
             win: lastMatch.win,
             lpChange: lastMatch.lpChange,
             playedAgo,
+            cutoutPath: lastMatchCutoutPath || `/champion-cache/${lastMatch.champion}_${lastMatch.skinId}_splash.jpg`,
+            splashPath: lastMatchSplashPath || `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${lastMatch.champion}_${lastMatch.skinId}.jpg`,
           }
         : null,
       displayMatches,

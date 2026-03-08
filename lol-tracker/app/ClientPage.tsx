@@ -33,12 +33,15 @@ interface PageData {
     lp: number
   } | null
   sessionWinRate: number
+  ddragonVersion: string
   lastMatch: {
     champion: string
     skinId: number
     win: boolean
     lpChange: number
     playedAgo: string
+    cutoutPath: string
+    splashPath: string
   } | null
   displayMatches: {
     id: number
@@ -81,8 +84,8 @@ export default function ClientPage({ data }: { data: PageData }) {
         <ChampionScene
           championName={data.lastMatch.champion}
           skinId={data.lastMatch.skinId}
-          splashPath={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${data.lastMatch.champion}_${data.lastMatch.skinId}.jpg`}
-          cutoutPath={`/champion-cache/${data.lastMatch.champion}_${data.lastMatch.skinId}_cutout.png`}
+          splashPath={data.lastMatch.splashPath}
+          cutoutPath={data.lastMatch.cutoutPath}
           win={data.lastMatch.win}
           lpChange={data.lastMatch.lpChange}
           tier={data.tier}
@@ -90,6 +93,7 @@ export default function ClientPage({ data }: { data: PageData }) {
           lp={data.lp}
           playedAgo={data.lastMatch.playedAgo}
           sessionWinRate={data.sessionWinRate}
+          ddragonVersion={data.ddragonVersion}
         />
       )}
 
@@ -119,11 +123,12 @@ export default function ClientPage({ data }: { data: PageData }) {
       <MatchTable
         initialMatches={data.displayMatches}
         totalMatches={data.totalMatches}
+        ddragonVersion={data.ddragonVersion}
       />
 
       {/* Section 6 — Champion Wall */}
       {data.wallMatches.length > 0 && (
-        <ChampionWall matches={data.wallMatches} />
+        <ChampionWall matches={data.wallMatches} ddragonVersion={data.ddragonVersion} />
       )}
     </main>
   )

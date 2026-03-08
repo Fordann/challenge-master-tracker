@@ -17,9 +17,10 @@ interface Match {
 interface MatchTableProps {
   initialMatches: Match[]
   totalMatches: number
+  ddragonVersion: string
 }
 
-export default function MatchTable({ initialMatches, totalMatches }: MatchTableProps) {
+export default function MatchTable({ initialMatches, totalMatches, ddragonVersion }: MatchTableProps) {
   const [matches, setMatches] = useState<Match[]>(initialMatches)
   const [loading, setLoading] = useState(false)
 
@@ -48,7 +49,7 @@ export default function MatchTable({ initialMatches, totalMatches }: MatchTableP
           Historique des parties
         </h2>
 
-        <div className="space-y-1">
+        <div className="space-y-2">
           {matches.map((match, i) => (
             <MatchRow
               key={match.matchId}
@@ -58,6 +59,7 @@ export default function MatchTable({ initialMatches, totalMatches }: MatchTableP
               duration={match.duration}
               playedAt={match.playedAt}
               index={i}
+              ddragonVersion={ddragonVersion}
             />
           ))}
         </div>
