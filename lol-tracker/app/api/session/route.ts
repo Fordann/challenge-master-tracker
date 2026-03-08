@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getActiveSession, getSessionStats } from '@/lib/session'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const player = await prisma.player.findFirst()
   if (!player) {
