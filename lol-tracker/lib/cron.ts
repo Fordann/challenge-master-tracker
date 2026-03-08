@@ -47,10 +47,17 @@ export async function getOrCreatePlayer() {
   const account = await getAccountByRiotId('AbatJourBleu', 'EUW11')
   const summoner = await getSummonerByPuuid(account.puuid)
 
+  console.log('[Sync] Summoner API response:', JSON.stringify(summoner))
+
+  const summonerId = summoner.id
+  if (!summonerId) {
+    throw new Error(`Summoner API returned no id. Response: ${JSON.stringify(summoner)}`)
+  }
+
   player = await prisma.player.create({
     data: {
       puuid: account.puuid,
-      summonerId: summoner.id,
+      summonerId,
       gameName: account.gameName,
       tagLine: account.tagLine,
     },
