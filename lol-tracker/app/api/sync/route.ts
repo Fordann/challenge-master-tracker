@@ -11,13 +11,11 @@ import {
 } from '@/lib/riot'
 import { assignMatchToSession, closeStaleSession } from '@/lib/session'
 import { getChampionCutout } from '@/lib/removebg'
+import { getOrCreatePlayer } from '@/lib/cron'
 
 export async function POST() {
   try {
-    const player = await prisma.player.findFirst()
-    if (!player) {
-      return NextResponse.json({ error: 'Player not found' }, { status: 404 })
-    }
+    const player = await getOrCreatePlayer()
 
     const entries = await getLeagueEntries(player.summonerId)
     const soloQ = getSoloQueueEntry(entries)

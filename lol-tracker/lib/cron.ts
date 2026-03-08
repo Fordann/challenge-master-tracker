@@ -39,7 +39,7 @@ export async function initCron() {
   })
 }
 
-async function getOrCreatePlayer() {
+export async function getOrCreatePlayer() {
   let player = await prisma.player.findFirst()
   if (player) return player
 
