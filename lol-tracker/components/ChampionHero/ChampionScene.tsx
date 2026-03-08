@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { useParallax, PARALLAX_DEPTH } from './useParallax'
@@ -38,6 +39,11 @@ export default function ChampionScene({
   const mouse = useParallax()
   const atmosphere: AtmosphereConfig = getAtmosphere(tier, rank, sessionWinRate)
 
+  // Fallback to ddragon splash if local cutout/splash fails
+  const ddragonSplash = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${championName}_0.jpg`
+  const [activeCutoutSrc, setActiveCutoutSrc] = useState(cutoutPath)
+  const [activeSplashSrc, setActiveSplashSrc] = useState(splashPath)
+
   const sign = lpChange >= 0 ? '+' : ''
   const resultColor = win ? 'text-accent-green' : 'text-accent-red'
   const resultGlow = win ? 'glow-win' : 'glow-lose'
@@ -60,11 +66,12 @@ export default function ChampionScene({
           transition={{ duration: 1.2, delay: 0.2 }}
         >
           <Image
-            src={splashPath}
+            src={activeSplashSrc}
             alt="Background"
             fill
             className="object-cover blur-sm"
             unoptimized
+            onError={() => setActiveSplashSrc(ddragonSplash)}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-bg-primary via-transparent to-bg-primary/80" />
         </motion.div>
@@ -84,12 +91,13 @@ export default function ChampionScene({
         >
           <div className="relative w-[600px] h-[600px] md:w-[800px] md:h-[800px]">
             <Image
-              src={cutoutPath}
+              src={activeCutoutSrc}
               alt={championName}
               fill
               className="object-contain"
               unoptimized
               priority
+              onError={() => setActiveCutoutSrc(ddragonSplash)}
             />
           </div>
         </motion.div>
