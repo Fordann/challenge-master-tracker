@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db'
 export const dynamic = 'force-dynamic'
 
 import {
-  getLeagueEntries,
+  getLeagueEntriesByPuuid,
   getMatchIds,
   getMatch,
   getSoloQueueEntry,
@@ -17,7 +17,7 @@ export async function POST() {
   try {
     const player = await getOrCreatePlayer()
 
-    const entries = await getLeagueEntries(player.summonerId)
+    const entries = await getLeagueEntriesByPuuid(player.puuid)
     const soloQ = getSoloQueueEntry(entries)
     if (!soloQ) {
       return NextResponse.json({ error: 'No Solo/Duo data' }, { status: 404 })
