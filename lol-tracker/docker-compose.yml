@@ -14,11 +14,24 @@ services:
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - CRON_INTERVAL_MINUTES=${CRON_INTERVAL_MINUTES:-5}
     depends_on:
-      mariadb:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
     volumes:
       - champion_cache:/app/public/champion-cache
+    networks:
+      - lol-network
+
+  migrate:
+    build:
+      context: .
+      target: builder
+    command: npx prisma db push --skip-generate
+    environment:
+      - DATABASE_URL=mysql://loltracker:password@mariadb:3306/loltracker
+    depends_on:
+      mariadb:
+        condition: service_healthy
     networks:
       - lol-network
 
