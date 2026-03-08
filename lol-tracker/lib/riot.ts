@@ -13,7 +13,8 @@ async function riotFetch<T>(url: string): Promise<T> {
     headers: { 'X-Riot-Token': RIOT_API_KEY },
   })
   if (!res.ok) {
-    throw new Error(`Riot API error ${res.status}: ${res.statusText} for ${url}`)
+    const body = await res.text().catch(() => '')
+    throw new Error(`Riot API error ${res.status}: ${res.statusText} for ${url} - ${body}`)
   }
   return res.json()
 }
