@@ -3,12 +3,9 @@
 import dynamic from 'next/dynamic'
 import Navbar from '@/components/Navbar/Navbar'
 import MountainChart from '@/components/MountainSection/MountainChart'
-import SessionCard from '@/components/SessionCard/SessionCard'
-import StreakFlame from '@/components/StreakDisplay/StreakFlame'
-import MatchTable from '@/components/MatchHistory/MatchTable'
+import SessionDashboard from '@/components/SessionDashboard/SessionDashboard'
 import ChampionWall from '@/components/MatchHistory/ChampionWall'
 
-// Dynamic import for Three.js / heavy client components
 const ChampionScene = dynamic(
   () => import('@/components/ChampionHero/ChampionScene'),
   { ssr: false }
@@ -62,7 +59,7 @@ interface PageData {
 
 export default function ClientPage({ data }: { data: PageData }) {
   return (
-    <main>
+    <main className="noise-overlay">
       <Navbar
         tier={data.tier}
         rank={data.rank}
@@ -70,7 +67,7 @@ export default function ClientPage({ data }: { data: PageData }) {
         lastSyncAt={new Date(data.lastSyncAt)}
       />
 
-      {/* Section 1 — Montagne */}
+      {/* Section 1 — Mountain parallax */}
       <MountainChart
         tier={data.tier}
         rank={data.rank}
@@ -97,36 +94,23 @@ export default function ClientPage({ data }: { data: PageData }) {
         />
       )}
 
-      {/* Section 3 — Session actuelle */}
-      {data.sessionData && (
-        <SessionCard
-          total={data.sessionData.total}
-          wins={data.sessionData.wins}
-          losses={data.sessionData.losses}
-          winRate={data.sessionData.winRate}
-          lpChange={data.sessionData.lpChange}
-          tier={data.sessionData.tier}
-          rank={data.sessionData.rank}
-          lp={data.sessionData.lp}
-          currentStreak={data.currentStreak}
-          streakType={data.streakType}
-        />
-      )}
+      {/* Divider */}
+      <div className="section-divider" />
 
-      {/* Section 4 — Streak Flamme */}
-      <StreakFlame
-        streak={data.currentStreak}
-        type={data.streakType}
-      />
-
-      {/* Section 5 — Historique des parties */}
-      <MatchTable
-        initialMatches={data.displayMatches}
+      {/* Section 3 — Session Dashboard (replaces match history) */}
+      <SessionDashboard
+        matches={data.displayMatches}
         totalMatches={data.totalMatches}
         ddragonVersion={data.ddragonVersion}
+        sessionData={data.sessionData}
+        currentStreak={data.currentStreak}
+        streakType={data.streakType}
       />
 
-      {/* Section 6 — Champion Wall */}
+      {/* Divider */}
+      <div className="section-divider" />
+
+      {/* Section 4 — Champion Wall */}
       {data.wallMatches.length > 0 && (
         <ChampionWall matches={data.wallMatches} ddragonVersion={data.ddragonVersion} />
       )}
