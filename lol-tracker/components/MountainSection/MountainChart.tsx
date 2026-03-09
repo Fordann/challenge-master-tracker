@@ -4,6 +4,14 @@ import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import TimerDisplay from './TimerDisplay'
+import LpGraph from './LpGraph'
+
+interface LpDataPoint {
+  lpAfter: number
+  tier: string
+  rank: string
+  playedAt: string
+}
 
 interface MountainChartProps {
   tier: string
@@ -11,15 +19,18 @@ interface MountainChartProps {
   lp: number
   lpToMaster: number
   estimatedGames: number | string
+  lpHistory: LpDataPoint[]
 }
 
+// Positions calibrated to background-image.png landmarks
+// The path follows the right side of the mountain from bottom-right to top
 const MILESTONES = [
-  { label: 'Emerald I', tier: 'EMERALD', rank: 'I', x: 57, y: 58 },
-  { label: 'Diamond IV', tier: 'DIAMOND', rank: 'IV', x: 66, y: 47 },
-  { label: 'Diamond III', tier: 'DIAMOND', rank: 'III', x: 70, y: 42 },
-  { label: 'Diamond II', tier: 'DIAMOND', rank: 'II', x: 73, y: 37 },
-  { label: 'Diamond I', tier: 'DIAMOND', rank: 'I', x: 76, y: 32 },
-  { label: 'Master', tier: 'MASTER', rank: '', x: 88, y: 13 },
+  { label: 'Emerald I', tier: 'EMERALD', rank: 'I', x: 70, y: 62 },
+  { label: 'Diamond IV', tier: 'DIAMOND', rank: 'IV', x: 73, y: 53 },
+  { label: 'Diamond III', tier: 'DIAMOND', rank: 'III', x: 70, y: 47 },
+  { label: 'Diamond II', tier: 'DIAMOND', rank: 'II', x: 75, y: 42 },
+  { label: 'Diamond I', tier: 'DIAMOND', rank: 'I', x: 80, y: 36 },
+  { label: 'Master', tier: 'MASTER', rank: '', x: 90, y: 18 },
 ]
 
 function getMilestoneIndex(tier: string, rank: string): number {
@@ -54,13 +65,13 @@ function buildPathD(): string {
     const prev = MILESTONES[i - 1]
     const curr = MILESTONES[i]
     const cx = (prev.x + curr.x) / 2
-    const cy = Math.min(prev.y, curr.y) - 3
+    const cy = Math.min(prev.y, curr.y) - 2
     d += ` Q ${cx} ${cy} ${curr.x} ${curr.y}`
   }
   return d
 }
 
-export default function MountainChart({ tier, rank, lp, lpToMaster, estimatedGames }: MountainChartProps) {
+export default function MountainChart({ tier, rank, lp, lpToMaster, estimatedGames, lpHistory }: MountainChartProps) {
   const pos = getProgressPosition(tier, rank, lp)
   const [mouse, setMouse] = useState({ x: 0, y: 0 })
   const sectionRef = useRef<HTMLElement>(null)
@@ -146,11 +157,11 @@ export default function MountainChart({ tier, rank, lp, lpToMaster, estimatedGam
 
       {/* Top/bottom edge fades */}
       <div className="absolute inset-0 pointer-events-none z-[3]">
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#0A0A0F] to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#0A0A0F] to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#0A0A0F] to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-[#0A0A0F] to-transparent" />
       </div>
 
-      {/* Dotted path SVG between milestones */}
+      {/* Dotted path SVG — high visibility */}
       <svg
         className="absolute inset-0 w-full h-full z-[5] pointer-events-none"
         viewBox="0 0 100 100"
@@ -162,40 +173,59 @@ export default function MountainChart({ tier, rank, lp, lpToMaster, estimatedGam
       >
         <defs>
           <linearGradient id="pathGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#C89B3C" stopOpacity="0.2" />
-            <stop offset="50%" stopColor="#0BC4E3" stopOpacity="0.5" />
-            <stop offset="100%" stopColor="#9D48E0" stopOpacity="0.35" />
+            <stop offset="0%" stopColor="#C89B3C" stopOpacity="0.6" />
+            <stop offset="50%" stopColor="#0BC4E3" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#9D48E0" stopOpacity="0.7" />
           </linearGradient>
+          <filter id="pathGlow">
+            <feGaussianBlur stdDeviation="0.4" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
         </defs>
-        {/* Glow trail */}
+        {/* Wide glow trail behind */}
         <path
           d={pathD}
           fill="none"
           stroke="url(#pathGrad)"
-          strokeWidth="0.5"
+          strokeWidth="0.8"
           strokeLinecap="round"
-          strokeDasharray="1.5 2.5"
-          opacity="0.25"
+          strokeDasharray="2 3"
+          opacity="0.35"
+          filter="url(#pathGlow)"
         />
-        {/* Main dotted line */}
+        {/* Main dotted line — bright */}
         <path
           d={pathD}
           fill="none"
           stroke="url(#pathGrad)"
-          strokeWidth="0.18"
+          strokeWidth="0.25"
           strokeLinecap="round"
-          strokeDasharray="0.6 1.4"
+          strokeDasharray="0.8 1.5"
+          opacity="0.8"
         />
-        {/* Milestone dots */}
+        {/* Milestone dots — larger and brighter */}
         {MILESTONES.map((m, i) => (
-          <circle
-            key={i}
-            cx={m.x}
-            cy={m.y}
-            r="0.5"
-            fill={i === MILESTONES.length - 1 ? '#9D48E0' : '#C89B3C'}
-            opacity="0.5"
-          />
+          <g key={i}>
+            {/* Outer glow */}
+            <circle
+              cx={m.x}
+              cy={m.y}
+              r="1.2"
+              fill={i === MILESTONES.length - 1 ? '#9D48E0' : '#C89B3C'}
+              opacity="0.2"
+            />
+            {/* Inner dot */}
+            <circle
+              cx={m.x}
+              cy={m.y}
+              r="0.6"
+              fill={i === MILESTONES.length - 1 ? '#9D48E0' : '#F0E6C8'}
+              opacity="0.8"
+            />
+          </g>
         ))}
       </svg>
 
@@ -214,61 +244,68 @@ export default function MountainChart({ tier, rank, lp, lpToMaster, estimatedGam
       >
         <div className="relative">
           <motion.div
-            className="w-4 h-4 rounded-full"
-            style={{ background: 'radial-gradient(circle, #0BC4E3, #0BC4E380)' }}
+            className="w-5 h-5 rounded-full"
+            style={{ background: 'radial-gradient(circle, #0BC4E3, #0BC4E360)' }}
             animate={{
               boxShadow: [
-                '0 0 8px 2px rgba(11,196,227,0.6)',
-                '0 0 24px 8px rgba(11,196,227,0.2)',
-                '0 0 8px 2px rgba(11,196,227,0.6)',
+                '0 0 10px 3px rgba(11,196,227,0.7)',
+                '0 0 28px 10px rgba(11,196,227,0.25)',
+                '0 0 10px 3px rgba(11,196,227,0.7)',
               ],
             }}
             transition={{ duration: 2, repeat: Infinity }}
           />
           <motion.div
-            className="absolute inset-0 w-4 h-4 rounded-full border border-accent-blue/40"
-            animate={{ scale: [1, 3], opacity: [0.5, 0] }}
-            transition={{ duration: 2.5, repeat: Infinity }}
+            className="absolute inset-0 w-5 h-5 rounded-full border-2 border-accent-blue/50"
+            animate={{ scale: [1, 3], opacity: [0.6, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
           />
           <motion.div
-            className="absolute inset-0 w-4 h-4 rounded-full border border-accent-blue/20"
-            animate={{ scale: [1, 4.5], opacity: [0.3, 0] }}
-            transition={{ duration: 3.5, repeat: Infinity, delay: 0.5 }}
+            className="absolute inset-0 w-5 h-5 rounded-full border border-accent-blue/25"
+            animate={{ scale: [1, 5], opacity: [0.3, 0] }}
+            transition={{ duration: 3, repeat: Infinity, delay: 0.4 }}
           />
         </div>
       </motion.div>
 
-      {/* Stats + Timer — bottom center */}
+      {/* LP Graph — bottom right */}
+      <LpGraph data={lpHistory} />
+
+      {/* Stats + Timer — bottom left */}
       <motion.div
-        className="relative z-10 flex flex-col items-center w-full max-w-4xl px-6 mb-16"
+        className="relative z-10 flex flex-col items-start w-full max-w-5xl px-8 mb-12"
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.5 }}
       >
-        <div className="flex gap-12 md:gap-20 mb-8">
-          <motion.div
-            className="text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <p className="text-text-secondary/50 text-[10px] uppercase tracking-[0.2em] mb-1">LP Restants</p>
-            <p className="font-beaufort text-3xl md:text-4xl text-accent-gold">{lpToMaster.toLocaleString()}</p>
-          </motion.div>
-          <motion.div
-            className="text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-          >
-            <p className="text-text-secondary/50 text-[10px] uppercase tracking-[0.2em] mb-1">Parties Est.</p>
-            <p className="font-beaufort text-3xl md:text-4xl text-accent-gold">
-              {typeof estimatedGames === 'number' ? `~${estimatedGames}` : '--'}
-            </p>
-          </motion.div>
-        </div>
+        <div className="glass-card px-8 py-6 backdrop-blur-xl">
+          <div className="flex gap-10 md:gap-16 mb-6">
+            <motion.div
+              className="text-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+            >
+              <p className="text-text-secondary/60 text-[10px] uppercase tracking-[0.2em] mb-1">LP Restants</p>
+              <p className="font-beaufort text-3xl md:text-4xl text-accent-gold drop-shadow-[0_0_8px_rgba(200,155,60,0.3)]">
+                {lpToMaster.toLocaleString()}
+              </p>
+            </motion.div>
+            <motion.div
+              className="text-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+            >
+              <p className="text-text-secondary/60 text-[10px] uppercase tracking-[0.2em] mb-1">Parties Est.</p>
+              <p className="font-beaufort text-3xl md:text-4xl text-accent-gold drop-shadow-[0_0_8px_rgba(200,155,60,0.3)]">
+                {typeof estimatedGames === 'number' ? `~${estimatedGames}` : '--'}
+              </p>
+            </motion.div>
+          </div>
 
-        <TimerDisplay />
+          <TimerDisplay />
+        </div>
       </motion.div>
     </section>
   )

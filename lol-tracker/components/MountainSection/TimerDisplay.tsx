@@ -55,18 +55,18 @@ export default function TimerDisplay() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 1 }}
     >
-      <p className="text-text-secondary/60 text-xs uppercase tracking-[0.3em] mb-3">Il reste</p>
-      <div className={`font-beaufort text-4xl md:text-5xl tracking-wider ${timerClass}`}>
+      <p className="text-text-secondary text-xs uppercase tracking-[0.3em] mb-3 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">Il reste</p>
+      <div className={`font-beaufort text-4xl md:text-5xl tracking-wider ${timerClass}`} style={{ textShadow: '0 2px 12px rgba(0,0,0,0.8), 0 0 20px rgba(200,155,60,0.3)' }}>
         <span className="text-accent-gold">{String(time.days).padStart(2, '0')}</span>
-        <span className="text-text-secondary/40 text-2xl mx-1">j</span>
+        <span className="text-accent-gold-light/50 text-2xl mx-1">j</span>
         <span className="text-accent-gold">{String(time.hours).padStart(2, '0')}</span>
-        <span className="text-text-secondary/40 text-2xl mx-1">h</span>
+        <span className="text-accent-gold-light/50 text-2xl mx-1">h</span>
         <span className="text-accent-gold">{String(time.minutes).padStart(2, '0')}</span>
-        <span className="text-text-secondary/40 text-2xl mx-1">m</span>
-        <span className="text-accent-gold/60 text-2xl">{String(time.seconds).padStart(2, '0')}</span>
-        <span className="text-text-secondary/30 text-lg">s</span>
+        <span className="text-accent-gold-light/50 text-2xl mx-1">m</span>
+        <span className="text-accent-gold/70 text-2xl">{String(time.seconds).padStart(2, '0')}</span>
+        <span className="text-accent-gold-light/30 text-lg">s</span>
       </div>
-      <p className="text-text-secondary/40 text-xs mt-2 uppercase tracking-widest">pour atteindre le Master</p>
+      <p className="text-text-secondary/60 text-xs mt-2 uppercase tracking-widest drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">pour atteindre le Master</p>
 
       {isLastHour && (
         <p className="text-accent-red font-beaufort text-lg mt-3 animate-pulse">

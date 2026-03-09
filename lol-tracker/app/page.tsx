@@ -111,6 +111,15 @@ async function getData() {
       win: m.win,
     }))
 
+    // LP history for graph (oldest first, last 50 matches)
+    const lpHistoryMatches = allMatches.slice(0, 50).reverse()
+    const lpHistory = lpHistoryMatches.map((m) => ({
+      lpAfter: m.lpAfter,
+      tier: m.tier,
+      rank: m.rank,
+      playedAt: m.playedAt.toISOString(),
+    }))
+
     // Time since last match
     let playedAgo = 'N/A'
     if (lastMatch) {
@@ -145,6 +154,7 @@ async function getData() {
         : null,
       displayMatches,
       wallMatches,
+      lpHistory,
       totalMatches: allMatches.length,
       lastSyncAt: latestSnapshot.takenAt.toISOString(),
     }
