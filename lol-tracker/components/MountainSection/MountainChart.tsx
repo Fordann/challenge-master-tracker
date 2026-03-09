@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import TimerDisplay from './TimerDisplay'
 
 interface MountainChartProps {
@@ -11,114 +12,93 @@ interface MountainChartProps {
   estimatedGames: number | string
 }
 
-const TIERS = ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'EMERALD', 'DIAMOND', 'MASTER']
-const TIER_COLORS: Record<string, string> = {
-  IRON: '#6B6B6B',
-  BRONZE: '#8B5E3C',
-  SILVER: '#A0A0B0',
-  GOLD: '#C89B3C',
-  PLATINUM: '#21A882',
-  EMERALD: '#00A86B',
-  DIAMOND: '#576BCE',
-  MASTER: '#9D48E0',
+// Emerald I through Master — positions mapped to the background image (% of viewport)
+const MILESTONES = [
+  { label: 'Emerald I', tier: 'EMERALD', rank: 'I', x: 57, y: 58 },
+  { label: 'Diamond IV', tier: 'DIAMOND', rank: 'IV', x: 66, y: 47 },
+  { label: 'Diamond III', tier: 'DIAMOND', rank: 'III', x: 70, y: 42 },
+  { label: 'Diamond II', tier: 'DIAMOND', rank: 'II', x: 73, y: 37 },
+  { label: 'Diamond I', tier: 'DIAMOND', rank: 'I', x: 76, y: 32 },
+  { label: 'Master', tier: 'MASTER', rank: '', x: 88, y: 13 },
+]
+
+function getMilestoneIndex(tier: string, rank: string): number {
+  for (let i = 0; i < MILESTONES.length; i++) {
+    const m = MILESTONES[i]
+    if (m.tier === tier && m.rank === rank) return i
+  }
+  if (tier === 'MASTER' || tier === 'GRANDMASTER' || tier === 'CHALLENGER') {
+    return MILESTONES.length - 1
+  }
+  return -1
 }
 
-function getTierProgress(tier: string, rank: string, lp: number): number {
-  const tierIndex = TIERS.indexOf(tier)
-  if (tierIndex === -1) return 0
-  const rankMap: Record<string, number> = { IV: 0, III: 1, II: 2, I: 3 }
-  const rankProgress = rankMap[rank] ?? 0
-  const totalLP = tierIndex * 400 + rankProgress * 100 + lp
-  const masterLP = 7 * 400
-  return Math.min(1, totalLP / masterLP)
+function getProgressPosition(tier: string, rank: string, lp: number): { x: number; y: number } {
+  const idx = getMilestoneIndex(tier, rank)
+
+  if (idx < 0) {
+    return { x: MILESTONES[0].x, y: MILESTONES[0].y }
+  }
+  if (idx >= MILESTONES.length - 1) {
+    return { x: MILESTONES[MILESTONES.length - 1].x, y: MILESTONES[MILESTONES.length - 1].y }
+  }
+
+  // Interpolate between current milestone and next based on LP (0-100)
+  const current = MILESTONES[idx]
+  const next = MILESTONES[idx + 1]
+  const t = Math.min(1, Math.max(0, lp / 100))
+
+  return {
+    x: current.x + (next.x - current.x) * t,
+    y: current.y + (next.y - current.y) * t,
+  }
 }
 
 export default function MountainChart({ tier, rank, lp, lpToMaster, estimatedGames }: MountainChartProps) {
-  const progress = getTierProgress(tier, rank, lp)
-
-  // Mountain SVG path points
-  const mountainPath = 'M0,500 L50,480 L120,420 L180,440 L250,350 L320,370 L400,280 L480,300 L550,200 L620,220 L700,130 L780,100 L850,50 L900,30 L950,20 L1000,10 L1000,500 Z'
+  const pos = getProgressPosition(tier, rank, lp)
 
   return (
-    <section className="relative min-h-screen flex flex-col justify-center items-center px-6 pt-[60px]"
-      style={{ background: 'linear-gradient(180deg, #0A0A0F 0%, #1A1F2E 100%)' }}
+    <section className="relative min-h-screen flex flex-col justify-end items-center pt-[60px]"
+      style={{ background: '#0A0A0F' }}
     >
-      {/* Mountain SVG */}
-      <div className="absolute inset-0 bottom-0 overflow-hidden">
-        <svg viewBox="0 0 1000 500" className="absolute bottom-0 w-full" preserveAspectRatio="xMidYMax slice">
-          <defs>
-            <linearGradient id="mountainGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#1A1F2E" />
-              <stop offset="100%" stopColor="#0F1923" />
-            </linearGradient>
-          </defs>
-
-          <motion.path
-            d={mountainPath}
-            fill="url(#mountainGrad)"
-            stroke="rgba(200,155,60,0.15)"
-            strokeWidth="1"
-            initial={{ translateY: 100, opacity: 0 }}
-            animate={{ translateY: 0, opacity: 1 }}
-            transition={{ duration: 1.2, ease: 'easeOut' }}
-          />
-
-          {/* Tier markers on the mountain */}
-          {TIERS.map((t, i) => {
-            const x = 50 + (i / (TIERS.length - 1)) * 900
-            const y = 480 - (i / (TIERS.length - 1)) * 470
-            const isCurrentTier = t === tier
-            const color = TIER_COLORS[t]
-
-            return (
-              <g key={t}>
-                <circle
-                  cx={x} cy={y} r={isCurrentTier ? 6 : 3}
-                  fill={color}
-                  opacity={isCurrentTier ? 1 : 0.4}
-                />
-                {isCurrentTier && (
-                  <motion.circle
-                    cx={x} cy={y} r={12}
-                    fill="none"
-                    stroke="#0BC4E3"
-                    strokeWidth={1.5}
-                    initial={{ scale: 0.5, opacity: 0 }}
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.8, 0, 0.8] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                )}
-                <text
-                  x={x} y={y - 15}
-                  textAnchor="middle"
-                  fill={isCurrentTier ? color : 'rgba(160,160,176,0.4)'}
-                  fontSize={isCurrentTier ? 12 : 9}
-                  fontFamily="serif"
-                >
-                  {t.charAt(0) + t.slice(1).toLowerCase()}
-                </text>
-              </g>
-            )
-          })}
-
-          {/* Progress dot along mountain */}
-          <motion.circle
-            cx={50 + progress * 900}
-            cy={480 - progress * 470}
-            r={8}
-            fill="#0BC4E3"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0.6, 1, 0.6] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          >
-            <animate attributeName="r" values="6;10;6" dur="2s" repeatCount="indefinite" />
-          </motion.circle>
-        </svg>
+      {/* Background image */}
+      <div className="absolute inset-0">
+        <Image
+          src="/background-image.png"
+          alt="Ranked Mountain"
+          fill
+          className="object-cover object-center"
+          priority
+          unoptimized
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0F] via-transparent to-[#0A0A0F]/60" />
       </div>
 
-      {/* Stats overlay */}
+      {/* Progress cursor — pulsing dot on the mountain */}
       <motion.div
-        className="relative z-10 flex flex-col md:flex-row items-end justify-between w-full max-w-5xl mt-auto mb-32"
+        className="absolute z-10"
+        style={{ left: `${pos.x}%`, top: `${pos.y}%`, transform: 'translate(-50%, -50%)' }}
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, delay: 0.5 }}
+      >
+        <div className="relative">
+          <motion.div
+            className="w-5 h-5 rounded-full bg-accent-blue"
+            animate={{ boxShadow: ['0 0 8px 2px rgba(11,196,227,0.6)', '0 0 20px 6px rgba(11,196,227,0.3)', '0 0 8px 2px rgba(11,196,227,0.6)'] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+          <motion.div
+            className="absolute inset-0 w-5 h-5 rounded-full border-2 border-accent-blue/50"
+            animate={{ scale: [1, 2.5], opacity: [0.6, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+        </div>
+      </motion.div>
+
+      {/* Stats overlay — bottom */}
+      <motion.div
+        className="relative z-10 flex flex-col md:flex-row items-end justify-between w-full max-w-5xl px-6 mb-12"
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.5 }}
@@ -131,7 +111,7 @@ export default function MountainChart({ tier, rank, lp, lpToMaster, estimatedGam
           <div className="text-center">
             <p className="text-text-secondary text-xs uppercase tracking-wider mb-1">Parties Est.</p>
             <p className="font-beaufort text-4xl text-accent-gold">
-              {typeof estimatedGames === 'number' ? `~ ${estimatedGames}` : '—'}
+              {typeof estimatedGames === 'number' ? `~ ${estimatedGames}` : '--'}
             </p>
           </div>
         </div>
@@ -141,7 +121,7 @@ export default function MountainChart({ tier, rank, lp, lpToMaster, estimatedGam
 
       {typeof estimatedGames === 'string' && (
         <motion.p
-          className="absolute bottom-8 text-text-secondary text-sm italic"
+          className="relative z-10 mb-8 text-text-secondary text-sm italic"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5 }}

@@ -34,7 +34,7 @@ export function getEstimatedGames(
   lpToMaster: number,
   avgLpChange: number
 ): string | number {
-  if (avgLpChange <= 0) return 'Redresse la barre d\'abord 💀'
+  if (avgLpChange <= 0) return 'Redresse la barre d\'abord'
   return Math.ceil(lpToMaster / avgLpChange)
 }
 
@@ -60,7 +60,7 @@ export function getChallengeTimeRemaining(): {
   percentElapsed: number
 } {
   const start = new Date(process.env.CHALLENGE_START || '2026-03-08T00:00:00+01:00').getTime()
-  const deadline = new Date(process.env.CHALLENGE_DEADLINE || '2026-03-15T23:59:00+01:00').getTime()
+  const deadline = new Date(process.env.CHALLENGE_DEADLINE || '2026-03-16T00:00:00+01:00').getTime()
   const now = Date.now()
   const totalMs = Math.max(0, deadline - now)
   const totalDuration = deadline - start

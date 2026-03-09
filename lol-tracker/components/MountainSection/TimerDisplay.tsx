@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 
 const CHALLENGE_START = process.env.NEXT_PUBLIC_CHALLENGE_START || '2026-03-08T00:00:00+01:00'
-const CHALLENGE_DEADLINE = process.env.NEXT_PUBLIC_CHALLENGE_DEADLINE || '2026-03-15T23:59:00+01:00'
+const CHALLENGE_DEADLINE = process.env.NEXT_PUBLIC_CHALLENGE_DEADLINE || '2026-03-16T00:00:00+01:00'
 
 export default function TimerDisplay() {
   const [time, setTime] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, percentElapsed: 0, totalMs: 1 })
@@ -50,7 +50,7 @@ export default function TimerDisplay() {
 
   return (
     <div className="text-right">
-      <p className="text-text-secondary text-sm mb-2">⏳ IL RESTE</p>
+      <p className="text-text-secondary text-sm mb-2">IL RESTE</p>
       <div className={`font-beaufort text-3xl md:text-4xl text-accent-gold ${timerClass}`}>
         <span>{String(time.days).padStart(2, '0')}j</span>{' '}
         <span>{String(time.hours).padStart(2, '0')}h</span>{' '}
@@ -61,7 +61,7 @@ export default function TimerDisplay() {
 
       {isLastHour && (
         <p className="text-accent-red font-beaufort text-lg mt-2 animate-pulse">
-          🔥 DERNIÈRE HEURE
+          DERNIERE HEURE
         </p>
       )}
 

@@ -49,19 +49,19 @@ export function formatSessionRecap(stats: {
 }): string {
   const sign = stats.lpChange >= 0 ? '+' : ''
   return [
-    `🎮 Session terminée — AbatJourBleu`,
+    `Session terminee -- AbatJourBleu`,
     ``,
-    `📊 Résultats`,
+    `Resultats`,
     `- Parties : ${stats.total} (${stats.wins}W / ${stats.losses}L)`,
     `- Win rate : ${stats.winRate}%`,
-    `- LP : ${stats.lpStart} → ${stats.lpEnd} (${sign}${stats.lpChange} LP)`,
+    `- LP : ${stats.lpStart} -> ${stats.lpEnd} (${sign}${stats.lpChange} LP)`,
     `- Rang : ${stats.tier} ${stats.rank}`,
-    `- 🔥 Meilleur streak : ${stats.bestStreak}`,
+    `- Meilleur streak : ${stats.bestStreak}`,
     ``,
-    `🏔️ LP restants pour Master : ${stats.lpToMaster}`,
-    `- ~${stats.estimatedGames} parties à ce rythme`,
+    `LP restants pour Master : ${stats.lpToMaster}`,
+    `- ~${stats.estimatedGames} parties a ce rythme`,
     ``,
-    `⏳ Temps restant dans le défi : ${stats.daysLeft}j ${stats.hoursLeft}h`,
+    `Temps restant dans le defi : ${stats.daysLeft}j ${stats.hoursLeft}h`,
   ].join('\n')
 }
 
@@ -84,15 +84,15 @@ export function formatDailyRecap(stats: {
 }): string {
   const sign = stats.lpChange >= 0 ? '+' : ''
   return [
-    `📅 Récap du ${stats.date} — AbatJourBleu`,
+    `Recap du ${stats.date} -- AbatJourBleu`,
     ``,
-    `🎮 ${stats.totalGames} parties | ✅ ${stats.wins}W ❌ ${stats.losses}L`,
-    `📈 Win rate : ${stats.winRate}%`,
-    `💎 ${sign}${stats.lpChange} LP aujourd'hui → ${stats.currentLP} LP (${stats.tier} ${stats.rank})`,
-    `🔥 Meilleur streak du jour : ${stats.bestDailyStreak}`,
-    `🗡️ Champions : ${stats.championsList}`,
+    `${stats.totalGames} parties | ${stats.wins}W ${stats.losses}L`,
+    `Win rate : ${stats.winRate}%`,
+    `${sign}${stats.lpChange} LP aujourd'hui -> ${stats.currentLP} LP (${stats.tier} ${stats.rank})`,
+    `Meilleur streak du jour : ${stats.bestDailyStreak}`,
+    `Champions : ${stats.championsList}`,
     ``,
-    `🏔️ LP restants : ${stats.lpToMaster} (~${stats.estimatedGames} parties)`,
-    `⏳ Il reste ${stats.daysLeft}j ${stats.hoursLeft}h dans le défi`,
+    `LP restants : ${stats.lpToMaster} (~${stats.estimatedGames} parties)`,
+    `Il reste ${stats.daysLeft}j ${stats.hoursLeft}h dans le defi`,
   ].join('\n')
 }
