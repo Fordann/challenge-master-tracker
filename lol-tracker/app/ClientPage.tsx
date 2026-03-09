@@ -53,6 +53,12 @@ interface PageData {
     champion: string
     win: boolean
   }[]
+  lpHistory: {
+    lpAfter: number
+    tier: string
+    rank: string
+    playedAt: string
+  }[]
   totalMatches: number
   lastSyncAt: string
 }
@@ -74,6 +80,7 @@ export default function ClientPage({ data }: { data: PageData }) {
         lp={data.lp}
         lpToMaster={data.lpToMaster}
         estimatedGames={data.estimatedGames}
+        lpHistory={data.lpHistory}
       />
 
       {/* Section 2 — Hero Champion 2.5D */}
