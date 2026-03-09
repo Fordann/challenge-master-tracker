@@ -13,24 +13,43 @@ interface ChampionWallProps {
   ddragonVersion: string
 }
 
+function getIconSize(count: number): number {
+  if (count <= 20) return 48
+  if (count <= 40) return 40
+  if (count <= 60) return 32
+  if (count <= 100) return 28
+  return 24
+}
+
+function getColumns(count: number): string {
+  const size = getIconSize(count)
+  return `repeat(auto-fill, minmax(${size}px, 1fr))`
+}
+
 export default function ChampionWall({ matches, ddragonVersion }: ChampionWallProps) {
+  const iconSize = getIconSize(matches.length)
+
   return (
     <section className="min-h-screen flex flex-col items-center justify-center px-6 py-20"
       style={{ background: '#050508' }}
     >
       <motion.div
-        className="max-w-4xl w-full"
+        className="max-w-5xl w-full"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
       >
-        <div className="grid grid-cols-6 md:grid-cols-10 lg:grid-cols-14 gap-2 justify-center">
+        <div
+          className="grid gap-2 justify-center"
+          style={{ gridTemplateColumns: getColumns(matches.length) }}
+        >
           {matches.map((match, i) => (
             <motion.div
               key={i}
-              className={`relative w-12 h-12 rounded-full overflow-hidden border-2 ${
+              className={`relative rounded-full overflow-hidden border-2 ${
                 match.win ? 'border-accent-green/60' : 'border-accent-red/60'
               }`}
+              style={{ width: iconSize, height: iconSize }}
               initial={{ scale: 0 }}
               whileInView={{ scale: 1 }}
               viewport={{ once: true }}
@@ -44,15 +63,11 @@ export default function ChampionWall({ matches, ddragonVersion }: ChampionWallPr
               <Image
                 src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${match.champion}.png`}
                 alt={match.champion}
-                width={48}
-                height={48}
+                width={iconSize}
+                height={iconSize}
                 className="object-cover"
                 unoptimized
               />
-              {/* Win/loss emoji overlay */}
-              <div className="absolute inset-0 flex items-center justify-center bg-black/20 text-sm">
-                {match.win ? '😊' : '😢'}
-              </div>
             </motion.div>
           ))}
         </div>
@@ -64,7 +79,7 @@ export default function ChampionWall({ matches, ddragonVersion }: ChampionWallPr
           viewport={{ once: true }}
           transition={{ delay: 0.5 }}
         >
-          {matches.length} parties jouées vers le Master
+          {matches.length} parties jouees vers le Master
         </motion.p>
       </motion.div>
     </section>

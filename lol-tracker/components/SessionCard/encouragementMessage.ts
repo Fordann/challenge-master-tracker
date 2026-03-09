@@ -5,7 +5,7 @@ export function getEncouragementMessage(
 ): string {
   if (streakType === 'win' && currentStreak >= 3) {
     const messages = [
-      "T'es en feu ! Continue comme ça 🔥",
+      "T'es en feu ! Continue comme ca",
       "Inarrêtable. Le Master tremble.",
       "Machine. Les LP pleuvent.",
       "Streak de ouf, profite du momentum !",
@@ -15,7 +15,7 @@ export function getEncouragementMessage(
 
   if (streakType === 'loss' && currentStreak >= 3) {
     const messages = [
-      "⚠️ Tilt alert — prends une pause, tu reviendras plus fort.",
+      "Tilt alert -- prends une pause, tu reviendras plus fort.",
       "3 défaites d'affilée... Respire, bois un verre d'eau.",
       "Le mental est plus important que le LP. Fais une pause.",
       "Stop loss activé. Reviens dans 30 min.",

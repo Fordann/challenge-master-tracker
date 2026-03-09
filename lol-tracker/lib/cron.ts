@@ -129,12 +129,12 @@ async function syncRiotData() {
     if (soloQ.tier === 'MASTER') {
       await sendNotification({
         event: 'master_reached',
-        message: `🏆 MASTER ATTEINT ! AbatJourBleu a réussi le défi !`,
+        message: `MASTER ATTEINT ! AbatJourBleu a reussi le defi !`,
       })
     } else {
       await sendNotification({
         event: 'division_change',
-        message: `⬆️ ${oldRank} → ${newRank} !`,
+        message: `${oldRank} -> ${newRank} !`,
       })
     }
   }
@@ -317,16 +317,16 @@ async function sendDailyRecap() {
   await sendNotification({
     event: 'daily_recap',
     message: [
-      `📅 Récap du ${new Date().toLocaleDateString('fr-FR')} — AbatJourBleu`,
+      `Recap du ${new Date().toLocaleDateString('fr-FR')} -- AbatJourBleu`,
       ``,
-      `🎮 ${todayMatches.length} parties | ✅ ${wins}W ❌ ${losses}L`,
-      `📈 Win rate : ${Math.round((wins / todayMatches.length) * 100)}%`,
-      `💎 ${lpChange >= 0 ? '+' : ''}${lpChange} LP aujourd'hui → ${lastMatch.lpAfter} LP (${lastMatch.tier} ${lastMatch.rank})`,
-      `🔥 Meilleur streak du jour : ${bestStreak}`,
-      `🗡️ Champions : ${championsList}`,
+      `${todayMatches.length} parties | ${wins}W ${losses}L`,
+      `Win rate : ${Math.round((wins / todayMatches.length) * 100)}%`,
+      `${lpChange >= 0 ? '+' : ''}${lpChange} LP aujourd'hui -> ${lastMatch.lpAfter} LP (${lastMatch.tier} ${lastMatch.rank})`,
+      `Meilleur streak du jour : ${bestStreak}`,
+      `Champions : ${championsList}`,
       ``,
-      `🏔️ LP restants : ${lpToMaster} (~${getEstimatedGames(lpToMaster, avgLp)} parties)`,
-      `⏳ Il reste ${time.days}j ${time.hours}h dans le défi`,
+      `LP restants : ${lpToMaster} (~${getEstimatedGames(lpToMaster, avgLp)} parties)`,
+      `Il reste ${time.days}j ${time.hours}h dans le defi`,
     ].join('\n'),
   })
 }

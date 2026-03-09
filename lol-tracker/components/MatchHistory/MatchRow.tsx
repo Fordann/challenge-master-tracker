@@ -29,16 +29,34 @@ function timeAgo(dateStr: string): string {
   return `il y a ${days}j`
 }
 
+// Heavy brick stacking animation — drops from above with bounce
+const brickVariants = {
+  hidden: { opacity: 0, y: -60, scaleY: 0.8 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    scaleY: 1,
+    transition: {
+      delay: i * 0.08,
+      type: 'spring' as const,
+      stiffness: 400,
+      damping: 25,
+      mass: 1.5,
+    },
+  }),
+}
+
 export default function MatchRow({ champion, win, lpChange, duration, playedAt, index, ddragonVersion }: MatchRowProps) {
   const sign = lpChange >= 0 ? '+' : ''
 
   return (
     <motion.div
       className="match-row flex items-center gap-4 px-4 py-3"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.05, duration: 0.3 }}
+      custom={index}
+      variants={brickVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: '-30px' }}
     >
       {/* Champion icon */}
       <div className={`w-10 h-10 rounded-full overflow-hidden border-2 ${win ? 'border-accent-green/60' : 'border-accent-red/60'}`}>
@@ -56,7 +74,7 @@ export default function MatchRow({ champion, win, lpChange, duration, playedAt, 
       <span className="text-accent-gold-light text-sm w-24 truncate">{champion}</span>
 
       {/* Result */}
-      <span className={`font-beaufort text-sm w-12 ${win ? 'text-accent-green glow-win' : 'text-accent-red glow-lose'}`}>
+      <span className={`font-beaufort text-sm w-12 ${win ? 'text-accent-green' : 'text-accent-red'}`}>
         {win ? 'WIN' : 'LOSE'}
       </span>
 

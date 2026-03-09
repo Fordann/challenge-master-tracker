@@ -76,7 +76,7 @@ export default function SessionCard({
           viewport={{ once: true }}
           transition={{ delay: 0.3 }}
         >
-          💬 &ldquo;{message}&rdquo;
+          &ldquo;{message}&rdquo;
         </motion.p>
       </motion.div>
     </section>

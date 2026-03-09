@@ -67,7 +67,7 @@ export default function Navbar({ tier, rank, lp, lastSyncAt }: NavbarProps) {
       }}
     >
       <div className="flex items-center gap-3">
-        <span className="text-lg font-beaufort text-accent-gold-light">⚔️ AbatJourBleu</span>
+        <span className="text-lg font-beaufort text-accent-gold-light">AbatJourBleu</span>
       </div>
 
       <div className="flex items-center gap-4">
@@ -102,7 +102,7 @@ export default function Navbar({ tier, rank, lp, lastSyncAt }: NavbarProps) {
         </button>
 
         <span className="text-xs text-text-secondary">
-          ⏱ sync il y a {syncAgo}
+          sync il y a {syncAgo}
         </span>
       </div>
     </nav>
