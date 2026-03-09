@@ -1,21 +1,21 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 
-const CHALLENGE_START = process.env.NEXT_PUBLIC_CHALLENGE_START || '2026-03-08T00:00:00+01:00'
-const CHALLENGE_DEADLINE = process.env.NEXT_PUBLIC_CHALLENGE_DEADLINE || '2026-03-16T00:00:00+01:00'
+// Hardcoded challenge dates — March 8 to March 15 midnight Paris time
+const CHALLENGE_START = new Date('2026-03-08T00:00:00+01:00').getTime()
+const CHALLENGE_DEADLINE = new Date('2026-03-16T00:00:00+01:00').getTime()
 
 export default function TimerDisplay() {
   const [time, setTime] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, percentElapsed: 0, totalMs: 1 })
 
   useEffect(() => {
     const update = () => {
-      const start = new Date(CHALLENGE_START).getTime()
-      const deadline = new Date(CHALLENGE_DEADLINE).getTime()
       const now = Date.now()
-      const totalMs = Math.max(0, deadline - now)
-      const totalDuration = deadline - start
-      const elapsed = now - start
+      const totalMs = Math.max(0, CHALLENGE_DEADLINE - now)
+      const totalDuration = CHALLENGE_DEADLINE - CHALLENGE_START
+      const elapsed = now - CHALLENGE_START
       const percentElapsed = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100))
 
       setTime({
@@ -41,7 +41,7 @@ export default function TimerDisplay() {
   if (isOver) {
     return (
       <div className="text-center">
-        <p className="font-beaufort text-2xl text-text-secondary">DÉFI TERMINÉ</p>
+        <p className="font-beaufort text-2xl text-text-secondary">DEFI TERMINE</p>
       </div>
     )
   }
@@ -49,37 +49,48 @@ export default function TimerDisplay() {
   const timerClass = isCritical ? 'timer-critical' : isUrgent ? 'timer-urgent' : ''
 
   return (
-    <div className="text-right">
-      <p className="text-text-secondary text-sm mb-2">IL RESTE</p>
-      <div className={`font-beaufort text-3xl md:text-4xl text-accent-gold ${timerClass}`}>
-        <span>{String(time.days).padStart(2, '0')}j</span>{' '}
-        <span>{String(time.hours).padStart(2, '0')}h</span>{' '}
-        <span>{String(time.minutes).padStart(2, '0')}m</span>{' '}
-        <span className="text-2xl">{String(time.seconds).padStart(2, '0')}s</span>
+    <motion.div
+      className="text-center"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, delay: 1 }}
+    >
+      <p className="text-text-secondary/60 text-xs uppercase tracking-[0.3em] mb-3">Il reste</p>
+      <div className={`font-beaufort text-4xl md:text-5xl tracking-wider ${timerClass}`}>
+        <span className="text-accent-gold">{String(time.days).padStart(2, '0')}</span>
+        <span className="text-text-secondary/40 text-2xl mx-1">j</span>
+        <span className="text-accent-gold">{String(time.hours).padStart(2, '0')}</span>
+        <span className="text-text-secondary/40 text-2xl mx-1">h</span>
+        <span className="text-accent-gold">{String(time.minutes).padStart(2, '0')}</span>
+        <span className="text-text-secondary/40 text-2xl mx-1">m</span>
+        <span className="text-accent-gold/60 text-2xl">{String(time.seconds).padStart(2, '0')}</span>
+        <span className="text-text-secondary/30 text-lg">s</span>
       </div>
-      <p className="text-text-secondary text-xs mt-1">pour atteindre le Master</p>
+      <p className="text-text-secondary/40 text-xs mt-2 uppercase tracking-widest">pour atteindre le Master</p>
 
       {isLastHour && (
-        <p className="text-accent-red font-beaufort text-lg mt-2 animate-pulse">
+        <p className="text-accent-red font-beaufort text-lg mt-3 animate-pulse">
           DERNIERE HEURE
         </p>
       )}
 
       {/* Progress bar */}
-      <div className="mt-3 w-full h-2 bg-bg-card rounded-full overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all duration-1000"
+      <div className="mt-4 w-64 mx-auto h-1 bg-white/5 rounded-full overflow-hidden">
+        <motion.div
+          className="h-full rounded-full"
+          initial={{ width: 0 }}
+          animate={{ width: `${time.percentElapsed}%` }}
+          transition={{ duration: 1.5, ease: 'easeOut' }}
           style={{
-            width: `${time.percentElapsed}%`,
             background: time.percentElapsed > 70
               ? 'linear-gradient(90deg, #D44B4B, #FF4500)'
-              : 'linear-gradient(90deg, #3CB95E, #0BC4E3)',
+              : 'linear-gradient(90deg, #C89B3C, #0BC4E3)',
           }}
         />
       </div>
-      <p className="text-text-secondary text-xs mt-1">
-        {Math.round(time.percentElapsed)}% du temps écoulé
+      <p className="text-text-secondary/30 text-[10px] mt-1.5 tracking-wider">
+        {Math.round(time.percentElapsed)}% du temps ecoule
       </p>
-    </div>
+    </motion.div>
   )
 }

@@ -14,11 +14,11 @@ interface ChampionWallProps {
 }
 
 function getIconSize(count: number): number {
-  if (count <= 20) return 48
-  if (count <= 40) return 40
-  if (count <= 60) return 32
-  if (count <= 100) return 28
-  return 24
+  if (count <= 20) return 52
+  if (count <= 40) return 44
+  if (count <= 60) return 36
+  if (count <= 100) return 30
+  return 26
 }
 
 function getColumns(count: number): string {
@@ -26,54 +26,91 @@ function getColumns(count: number): string {
   return `repeat(auto-fill, minmax(${size}px, 1fr))`
 }
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.015 },
+  },
+}
+
+const iconVariants = {
+  hidden: { scale: 0, opacity: 0 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: { type: 'spring' as const, stiffness: 400, damping: 20 },
+  },
+}
+
 export default function ChampionWall({ matches, ddragonVersion }: ChampionWallProps) {
   const iconSize = getIconSize(matches.length)
 
   return (
-    <section className="min-h-screen flex flex-col items-center justify-center px-6 py-20"
-      style={{ background: '#050508' }}
-    >
+    <section className="relative px-6 py-20 overflow-hidden">
       <motion.div
-        className="max-w-5xl w-full"
+        className="max-w-5xl mx-auto"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
       >
-        <div
-          className="grid gap-2 justify-center"
-          style={{ gridTemplateColumns: getColumns(matches.length) }}
-        >
-          {matches.map((match, i) => (
-            <motion.div
-              key={i}
-              className={`relative rounded-full overflow-hidden border-2 ${
-                match.win ? 'border-accent-green/60' : 'border-accent-red/60'
-              }`}
-              style={{ width: iconSize, height: iconSize }}
-              initial={{ scale: 0 }}
-              whileInView={{ scale: 1 }}
-              viewport={{ once: true }}
-              transition={{
-                type: 'spring',
-                stiffness: 300,
-                damping: 20,
-                delay: i * 0.02,
+        <p className="text-text-secondary/40 text-[10px] uppercase tracking-[0.3em] mb-8 text-center">
+          Tous les champions joues
+        </p>
+
+        {/* Animated border container */}
+        <div className="relative p-[1px] rounded-2xl champion-wall-border">
+          <div className="relative rounded-2xl p-6 overflow-hidden"
+            style={{ background: 'rgba(10, 10, 15, 0.8)' }}
+          >
+            {/* Inner glow */}
+            <div className="absolute inset-0 rounded-2xl opacity-30 pointer-events-none"
+              style={{
+                boxShadow: 'inset 0 0 60px rgba(200, 155, 60, 0.05), inset 0 0 120px rgba(11, 196, 227, 0.03)',
               }}
+            />
+
+            <motion.div
+              className="grid gap-2 justify-center relative z-10"
+              style={{ gridTemplateColumns: getColumns(matches.length) }}
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: '-50px' }}
             >
-              <Image
-                src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${match.champion}.png`}
-                alt={match.champion}
-                width={iconSize}
-                height={iconSize}
-                className="object-cover"
-                unoptimized
-              />
+              {matches.map((match, i) => (
+                <motion.div
+                  key={i}
+                  className="relative group"
+                  style={{ width: iconSize, height: iconSize }}
+                  variants={iconVariants}
+                >
+                  <div
+                    className="w-full h-full rounded-lg overflow-hidden"
+                    style={{
+                      border: `1.5px solid ${match.win ? 'rgba(60,185,94,0.4)' : 'rgba(212,75,75,0.4)'}`,
+                      boxShadow: match.win
+                        ? '0 0 6px rgba(60,185,94,0.15)'
+                        : '0 0 6px rgba(212,75,75,0.15)',
+                    }}
+                  >
+                    <Image
+                      src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${match.champion}.png`}
+                      alt={match.champion}
+                      width={iconSize}
+                      height={iconSize}
+                      className="object-cover transition-transform duration-300 group-hover:scale-110"
+                      unoptimized
+                    />
+                  </div>
+                </motion.div>
+              ))}
             </motion.div>
-          ))}
+          </div>
         </div>
 
         <motion.p
-          className="text-center text-text-secondary mt-8 text-sm"
+          className="text-center text-text-secondary/30 text-xs mt-6 uppercase tracking-widest"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
