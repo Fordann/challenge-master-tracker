@@ -1,8 +1,6 @@
 services:
   app:
     build: .
-    ports:
-      - "3000:3000"
     environment:
       - DATABASE_URL=mysql://${MYSQL_USER:-loltracker}:${MYSQL_PASSWORD:-password}@mariadb:3306/${MYSQL_DATABASE:-loltracker}
       - RIOT_API_KEY=${RIOT_API_KEY}
@@ -63,13 +61,11 @@ services:
 
   n8n:
     image: n8nio/n8n:latest
-    ports:
-      - "5678:5678"
     environment:
       - N8N_BASIC_AUTH_ACTIVE=true
       - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER:-admin}
       - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD:-changeme}
-      - WEBHOOK_URL=${WEBHOOK_URL:-http://localhost:5678}
+      - WEBHOOK_URL=${WEBHOOK_URL:-https://master-in-a-week.nieuviarts.fr}
     volumes:
       - n8n_data:/home/node/.n8n
     depends_on:
