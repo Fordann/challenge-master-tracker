@@ -43,6 +43,7 @@ services:
 
   mariadb:
     image: mariadb:11
+    command: --skip-ssl
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-loltracker}
