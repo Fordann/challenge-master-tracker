@@ -33,6 +33,7 @@ services:
       context: .
       target: builder
     command: npx prisma db push --skip-generate
+    restart: "no"
     environment:
       - DATABASE_URL=mysql://${MYSQL_USER:-loltracker}:${MYSQL_PASSWORD:-password}@mariadb:3306/${MYSQL_DATABASE:-loltracker}
     depends_on:
