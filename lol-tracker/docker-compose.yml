@@ -4,7 +4,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=mysql://loltracker:password@mariadb:3306/loltracker
+      - DATABASE_URL=mysql://${MYSQL_USER:-loltracker}:${MYSQL_PASSWORD:-password}@mariadb:3306/${MYSQL_DATABASE:-loltracker}
       - RIOT_API_KEY=${RIOT_API_KEY}
       - N8N_WEBHOOK_URL=http://n8n:5678/
       - N8N_WEBHOOK_SECRET=${N8N_WEBHOOK_SECRET}
@@ -19,6 +19,12 @@ services:
     restart: unless-stopped
     volumes:
       - champion_cache:/app/public/champion-cache
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     networks:
       - lol-network
 
@@ -28,7 +34,7 @@ services:
       target: builder
     command: npx prisma db push --skip-generate
     environment:
-      - DATABASE_URL=mysql://loltracker:password@mariadb:3306/loltracker
+      - DATABASE_URL=mysql://${MYSQL_USER:-loltracker}:${MYSQL_PASSWORD:-password}@mariadb:3306/${MYSQL_DATABASE:-loltracker}
     depends_on:
       mariadb:
         condition: service_healthy
@@ -37,8 +43,6 @@ services:
 
   mariadb:
     image: mariadb:11
-    ports:
-      - "3307:3306"
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-loltracker}
