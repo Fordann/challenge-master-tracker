@@ -33,6 +33,7 @@ services:
       context: .
       target: builder
     command: npx prisma db push --skip-generate
+    restart: "no"
     environment:
       - DATABASE_URL=mysql://${MYSQL_USER:-loltracker}:${MYSQL_PASSWORD:-password}@mariadb:3306/${MYSQL_DATABASE:-loltracker}
     depends_on:
@@ -43,7 +44,7 @@ services:
 
   mariadb:
     image: mariadb:11
-    command: --skip-ssl
+    command: --skip-ssl --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-loltracker}
