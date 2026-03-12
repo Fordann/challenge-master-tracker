@@ -20,6 +20,8 @@ interface ChampionSceneProps {
   playedAgo: string
   sessionWinRate: number
   ddragonVersion: string
+  lpToMaster: number
+  estimatedGames: number | string
 }
 
 export default function ChampionScene({
@@ -34,6 +36,8 @@ export default function ChampionScene({
   playedAgo,
   sessionWinRate,
   ddragonVersion,
+  lpToMaster,
+  estimatedGames,
 }: ChampionSceneProps) {
   const mouse = useParallax()
   const atmosphere: AtmosphereConfig = getAtmosphere(tier, rank, sessionWinRate)
@@ -76,7 +80,33 @@ export default function ChampionScene({
         </motion.div>
       </div>
 
-      {/* LAYER 2 — Mid/Body (champion main body, medium speed) */}
+      {/* LAYER 2a — Background (deepest, very slow parallax) */}
+      <div
+        className="absolute inset-[-30px]"
+        style={{
+          transform: `translate(${mouse.x * PARALLAX_DEPTH.background.x * 0.3}px, ${mouse.y * PARALLAX_DEPTH.background.y * 0.3}px)`,
+          transition: 'transform 0.15s linear',
+        }}
+      >
+        <motion.div
+          className="absolute inset-0"
+          initial={{ opacity: 0, scale: 1.15 }}
+          animate={{ opacity: 0.2, scale: 1.05 }}
+          transition={{ duration: 1.8, delay: 0.1 }}
+        >
+          <Image
+            src={activeSplashSrc}
+            alt="Background"
+            fill
+            className="object-cover blur-[8px]"
+            unoptimized
+            onError={() => setActiveSplashSrc(ddragonSplash)}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0F] via-[#0A0A0F]/40 to-[#0A0A0F]/80" />
+        </motion.div>
+      </div>
+
+      {/* LAYER 2b — Bust/Torso (medium parallax, main focus) */}
       <div
         className="absolute inset-[-20px]"
         style={{
@@ -86,20 +116,20 @@ export default function ChampionScene({
       >
         <motion.div
           className="absolute inset-0 flex items-center justify-center"
-          initial={{ opacity: 0, y: 40, scale: 1.05 }}
+          initial={{ opacity: 0, y: 60, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 1, delay: 0.8 }}
+          transition={{ duration: 1.2, delay: 0.6, type: 'spring', stiffness: 60 }}
         >
-          {/* Center crop — bust/torso region */}
-          <div className="relative w-[700px] h-[700px] md:w-[900px] md:h-[900px]">
+          {/* Center crop — bust/torso region with better isolation */}
+          <div className="relative w-[600px] h-[650px] md:w-[850px] md:h-[850px]">
             <Image
               src={activeSplashSrc}
               alt={championName}
               fill
-              className="object-cover object-top"
+              className="object-cover object-center"
               style={{
-                clipPath: 'ellipse(45% 50% at 50% 40%)',
-                filter: 'brightness(1.1) contrast(1.05)',
+                clipPath: 'ellipse(38% 48% at 50% 38%)',
+                filter: 'brightness(1.2) contrast(1.08)',
               }}
               unoptimized
               priority
@@ -109,7 +139,7 @@ export default function ChampionScene({
         </motion.div>
       </div>
 
-      {/* LAYER 3 — Foreground elements (fastest parallax, edges/weapons) */}
+      {/* LAYER 2c — Weapon/Hand (fastest parallax, top layer) */}
       <div
         className="absolute inset-[-40px]"
         style={{
@@ -118,23 +148,21 @@ export default function ChampionScene({
         }}
       >
         <motion.div
-          className="absolute inset-0 flex items-center justify-center"
-          initial={{ opacity: 0, scale: 1.2 }}
-          animate={{ opacity: 0.6, scale: 1 }}
-          transition={{ duration: 0.8, delay: 1.2 }}
+          className="absolute inset-0 flex items-center justify-start"
+          initial={{ opacity: 0, scale: 1.25, rotateZ: -5 }}
+          animate={{ opacity: 0.75, scale: 1, rotateZ: 0 }}
+          transition={{ duration: 0.9, delay: 1.0 }}
         >
-          {/* Foreground crop — bottom portion (hands/weapons) */}
-          <div className="relative w-[800px] h-[400px] md:w-[1000px] md:h-[500px] mt-[300px]">
+          {/* Left side weapon/hand — sharp edge */}
+          <div className="relative w-[450px] h-[500px] md:w-[600px] md:h-[700px] -ml-32 md:-ml-48">
             <Image
               src={activeSplashSrc}
               alt=""
               fill
-              className="object-cover object-bottom"
+              className="object-cover object-right"
               style={{
-                clipPath: 'polygon(10% 40%, 90% 40%, 100% 100%, 0% 100%)',
-                filter: 'brightness(1.15)',
-                maskImage: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%)',
-                WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%)',
+                clipPath: 'polygon(0 30%, 30% 0, 40% 20%, 35% 60%, 20% 100%, 0 100%)',
+                filter: 'brightness(1.25) saturate(1.1)',
               }}
               unoptimized
               onError={() => setActiveSplashSrc(ddragonSplash)}
@@ -172,40 +200,75 @@ export default function ChampionScene({
         }}
       />
 
-      {/* Text overlay card */}
+      {/* Text overlay card — IMPROVED POSITIONING & VISIBILITY */}
       <motion.div
-        className="absolute bottom-16 left-8 md:left-16 z-10"
+        className="absolute bottom-24 left-8 md:left-16 z-10"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 1.8 }}
       >
-        <div className="glass-card p-6 max-w-md">
-          <div className="flex items-center gap-3 mb-2">
-            <div className={`w-10 h-10 rounded-full overflow-hidden border-2 ${win ? 'border-accent-green' : 'border-accent-red'} ${resultGlow}`}>
+        <div className="glass-card p-6 max-w-sm border border-text-secondary/20 backdrop-blur-lg shadow-lg shadow-accent-gold-dark/20">
+          <div className="flex items-center gap-3 mb-4">
+            <div className={`w-12 h-12 rounded-full overflow-hidden border-2 flex-shrink-0 ${win ? 'border-accent-green shadow-lg shadow-accent-green/50' : 'border-accent-red shadow-lg shadow-accent-red/50'} ${resultGlow}`}>
               <Image
                 src={`https://ddragon.leagueoflegends.com/cdn/${ddragonVersion}/img/champion/${championName}.png`}
                 alt={championName}
-                width={40}
-                height={40}
+                width={48}
+                height={48}
                 unoptimized
               />
             </div>
-            <div>
-              <p className="font-beaufort text-lg text-accent-gold-light">{championName}</p>
+            <div className="min-w-0">
+              <p className="font-beaufort text-xl text-accent-gold-light leading-tight">{championName}</p>
               <p className="text-xs text-text-secondary">Derniere partie · il y a {playedAgo}</p>
             </div>
           </div>
-          <div className="flex items-center gap-3 mt-2">
-            <span className={`font-beaufort text-lg ${resultColor}`}>
-              {win ? 'WIN' : 'LOSE'}
-            </span>
-            <span className={`font-beaufort ${resultColor}`}>
-              {sign}{lpChange} LP
-            </span>
-            <span className="text-text-secondary/50">{'->'}</span>
-            <span className="text-accent-gold-light text-sm">
-              {tier.charAt(0) + tier.slice(1).toLowerCase()} {rank} · {lp} LP
-            </span>
+          {/* Result section with better visibility */}
+          <div className="space-y-2 border-t border-text-secondary/20 pt-3">
+            <div className="flex items-center justify-between">
+              <span className={`font-beaufort text-2xl font-bold ${resultColor}`}>
+                {win ? '✓ VICTOIRE' : '✗ DÉFAITE'}
+              </span>
+              <span className={`font-beaufort text-2xl font-bold ${resultColor} px-3 py-1 rounded-lg border ${win ? 'border-accent-green/50 bg-accent-green/10' : 'border-accent-red/50 bg-accent-red/10'}`}>
+                {sign}{lpChange} LP
+              </span>
+            </div>
+            <div className="text-xs text-text-secondary">
+              {tier} {rank} → {tier} {rank} {lp} LP
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* LP Path Progress — BOTTOM RIGHT */}
+      <motion.div
+        className="absolute bottom-24 right-8 md:right-16 z-10"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6, delay: 2.0 }}
+      >
+        <div className="glass-card p-4 max-w-xs border border-text-secondary/20 backdrop-blur-lg">
+          <p className="text-accent-gold-light font-beaufort text-sm mb-3 uppercase tracking-[0.1em]">Chemin vers Master</p>
+          <div className="space-y-2">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-text-secondary">LP restants:</span>
+              <span className="font-beaufort text-accent-cyan text-lg font-bold">{lpToMaster}</span>
+            </div>
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-text-secondary">Parties estimées:</span>
+              <span className="font-beaufort text-accent-gold text-lg font-bold">{estimatedGames}</span>
+            </div>
+            <div className="h-1 bg-text-secondary/10 rounded-full overflow-hidden mt-3">
+              <motion.div
+                className="h-full bg-gradient-to-r from-accent-green via-accent-cyan to-accent-gold"
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min(100, ((2800 - lpToMaster) / 2800) * 100)}%` }}
+                transition={{ duration: 1.2, delay: 2.2 }}
+              />
+            </div>
+            <p className="text-xs text-text-secondary/70 mt-2">
+              {((2800 - lpToMaster) / 2800 * 100).toFixed(1)}% progression
+            </p>
           </div>
         </div>
       </motion.div>
