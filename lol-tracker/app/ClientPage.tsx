@@ -98,6 +98,8 @@ export default function ClientPage({ data }: { data: PageData }) {
           playedAgo={data.lastMatch.playedAgo}
           sessionWinRate={data.sessionWinRate}
           ddragonVersion={data.ddragonVersion}
+          lpToMaster={data.lpToMaster}
+          estimatedGames={data.estimatedGames}
         />
       )}
 
