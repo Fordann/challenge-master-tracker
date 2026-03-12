@@ -14,6 +14,12 @@ RUN if [ -f package-lock.json ]; then \
 COPY prisma ./prisma
 RUN npx prisma generate
 
+# Migration target — only needs Prisma, no Next.js build
+FROM base AS migrate
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY prisma ./prisma
+
 # Build the app
 FROM base AS builder
 WORKDIR /app
