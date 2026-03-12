@@ -29,7 +29,7 @@ services:
   migrate:
     build:
       context: .
-      target: builder
+      target: migrate
     command: npx prisma db push --skip-generate
     restart: "no"
     environment:
